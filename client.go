@@ -5,6 +5,8 @@ import (
    "fmt"
    "io/ioutil"
    "net/http"
+   "strconv"
+   "strings"
    "time"
 )
 
@@ -51,6 +53,23 @@ type Workout struct {
    Felt string `json:"felt"`
    Duration int `json:"duration"`
    Title string `json:"title"`
+}
+
+func (w Workout) DurationStrUnits() (time.Duration, error) {
+   return time.ParseDuration(strconv.Itoa(w.Duration) + "s")
+}
+
+func (w Workout) DurationStrColons() (string, error) {
+   d, err := time.ParseDuration(strconv.Itoa(w.Duration) + "s")
+   if err != nil {
+      return "", err
+   }
+   ds := strings.Replace(d.String(), "h", ":", -1)
+   ds = strings.Replace(ds, "m", ":", -1)
+   ds = strings.Replace(ds, "s", ":", -1)
+   ds = strings.TrimRight(ds, ":")
+
+   return ds, nil
 }
 
 type Distance struct {
