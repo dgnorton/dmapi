@@ -28,6 +28,16 @@ func LoadEntries(file string) (*Entries, error) {
    return &entries, err
 }
 
+func (e *Entries) Remove(id int) error {
+   for i, entry := range e.Entries {
+      if entry.Id == id || id == -1 {
+         e.Entries = append(e.Entries[:i], e.Entries[i+1:]...)
+         return nil
+      }
+   }
+   return errors.New("id not found")
+}
+
 func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
    var start, end time.Time
    if startDate != "" {
