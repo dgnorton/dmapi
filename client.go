@@ -6,7 +6,6 @@ import (
    "io/ioutil"
    "net/http"
    "strconv"
-   "strings"
    "time"
 )
 
@@ -51,29 +50,51 @@ type Workout struct {
    Type string `json:"activity_type"`
    Distance Distance `json:"distance"`
    Felt string `json:"felt"`
-   Duration int `json:"duration"`
+   Dur int `json:"duration"`
    Title string `json:"title"`
 }
 
-func (w Workout) DurationStrUnits() (time.Duration, error) {
-   return time.ParseDuration(strconv.Itoa(w.Duration) + "s")
+func (w Workout) Pace() (time.Duration, error) {
+   secPerUnit := w.Duration().Seconds() / w.Distance.Value
+   return time.ParseDuration(strconv.FormatFloat(secPerUnit, 'f', 6, 64) + "s")
 }
 
-func (w Workout) DurationStrColons() (string, error) {
-   d, err := time.ParseDuration(strconv.Itoa(w.Duration) + "s")
+func (w Workout) PaceStr() (string, error) {
+   d, err := w.Pace()
    if err != nil {
       return "", err
    }
-   ds := strings.Replace(d.String(), "h", ":", -1)
-   ds = strings.Replace(ds, "m", ":", -1)
-   ds = strings.Replace(ds, "s", ":", -1)
-   ds = strings.TrimRight(ds, ":")
+   return DurationStr(d), nil
+}
 
-   return ds, nil
+func (w Workout) Duration() time.Duration {
+   dur, _ := time.ParseDuration(strconv.Itoa(w.Dur) + "s")
+   return dur
+}
+
+func DurationStr(d time.Duration) string {
+   totSec := int(d.Seconds())
+   h := totSec / 3600
+   m := (totSec - (h * 3600)) / 60
+   s := totSec - (h * 3600) - (m * 60)
+
+   if h > 0 {
+      return fmt.Sprintf("%d:%02d:%02d", h, m, s)
+   }
+
+   return fmt.Sprintf("%d:%02d", m, s)
+}
+
+func (w Workout) DurationStrColons() (string, error) {
+   d, err := time.ParseDuration(strconv.Itoa(w.Dur) + "s")
+   if err != nil {
+      return "", err
+   }
+   return DurationStr(d), nil
 }
 
 type Distance struct {
-   Value float32 `json:"value"`
+   Value float64 `json:"value"`
    Units string `json:"units"`
 }
 
