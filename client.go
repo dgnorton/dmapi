@@ -55,6 +55,9 @@ type Workout struct {
 }
 
 func (w Workout) Pace() (time.Duration, error) {
+   if w.Distance.Value <= 0.0 {
+      return time.Duration(0.0), nil
+   }
    secPerUnit := w.Duration().Seconds() / w.Distance.Value
    return time.ParseDuration(strconv.FormatFloat(secPerUnit, 'f', 6, 64) + "s")
 }
@@ -106,6 +109,46 @@ type Geo struct {
 
 type Entries struct {
    Entries []Entry `json:"entries"`
+}
+
+func (e Entries) TotalDistance() float64 {
+   var d float64 = 0.0
+   for _, entry := range e.Entries {
+      // need to fix to deal with different units
+      d += entry.Workout.Distance.Value
+   }
+   return d
+}
+
+func (e Entries) AvgPace() (time.Duration, error) {
+   var avg int64 = 0
+   var cnt int64 = 0
+
+   for _, entry := range e.Entries {
+      p, err := entry.Workout.Pace()
+      if err != nil {
+         return time.Duration(0), err
+      }
+
+      avg += p.Nanoseconds()
+      if p.Nanoseconds() > 0 {
+         cnt++
+      }
+   }
+
+   if cnt > 0 {
+      avg /= cnt
+   }
+
+   return time.Duration(avg), nil
+}
+
+func (e Entries) AvgPaceStr() string {
+   d, err := e.AvgPace()
+   if err != nil {
+      return ""
+   }
+   return DurationStr(d)
 }
 
 func EntriesByPage(user string, page int) (*Entries, error) {

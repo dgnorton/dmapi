@@ -3,7 +3,6 @@ package dmapi
 import (
    "encoding/json"
    "errors"
-   //"fmt"
    "io/ioutil"
    "regexp"
    "time"
@@ -73,6 +72,9 @@ func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
 
    var matches Entries
    for _, entry := range e.Entries {
+      if entry.Workout.Type == "" {
+         continue
+      }
       if startDate != "" {
          t, err := entry.Time()
          if err != nil {
