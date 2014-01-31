@@ -59,6 +59,7 @@ func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
       if err != nil {
          return nil, err
       }
+      end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
    }
 
    if pattern == "*" || pattern == "" {
