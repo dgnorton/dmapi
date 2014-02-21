@@ -126,6 +126,9 @@ func (e Entries) AvgPace() (time.Duration, error) {
 
    for _, entry := range e.Entries {
       p, err := entry.Workout.Pace()
+      if entry.Workout.Distance.Units == "kilometers" {
+         p = mpkToMpm(p)
+      }
       if err != nil {
          return time.Duration(0), err
       }
@@ -149,6 +152,11 @@ func (e Entries) AvgPaceStr() string {
       return ""
    }
    return DurationStr(d)
+}
+
+// Converts minutes/km to minutes/mi
+func mpkToMpm(d time.Duration) time.Duration {
+   return time.Duration(float64(d) * 1.609)
 }
 
 func EntriesByPage(user string, page int) (*Entries, error) {
