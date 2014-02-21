@@ -39,12 +39,14 @@ func (e *Entries) Remove(id int) error {
 
 func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
    var start, end time.Time
+   loc := time.Now().Location()
+
    if startDate != "" {
       template, err := dateTemplate(startDate)
       if err != nil {
          return nil, err
       }
-      start, err = time.Parse(template, startDate)
+      start, err = time.ParseInLocation(template, startDate, loc)
       if err != nil {
          return nil, err
       }
@@ -55,7 +57,7 @@ func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
       if err != nil {
          return nil, err
       }
-      end, err = time.Parse(template, endDate)
+      end, err = time.ParseInLocation(template, endDate, loc)
       if err != nil {
          return nil, err
       }
@@ -81,6 +83,7 @@ func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
          if err != nil {
             continue
          }
+         t = t.Local()
          if t.Before(start) {
             continue
          } else if endDate != "" && t.After(end) {
