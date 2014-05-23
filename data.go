@@ -37,7 +37,7 @@ func (e *Entries) Remove(id int) error {
    return errors.New("id not found")
 }
 
-func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
+func (e *Entries) Find(startDate, endDate, pattern, workoutType string) (*Entries, error) {
    var start, end time.Time
    loc := time.Now().Location()
 
@@ -73,9 +73,17 @@ func (e *Entries) Find(startDate, endDate, pattern string) (*Entries, error) {
       return nil, err
    }
 
+   useType := false
+   if (len(workoutType) > 0) {
+      useType = true
+   }
+
    var matches Entries
    for _, entry := range e.Entries {
       if entry.Workout.Type == "" {
+         continue
+      }
+      if useType &&  entry.Workout.Type != workoutType {
          continue
       }
       if startDate != "" {
